@@ -1,0 +1,201 @@
+---
+import '../styles/global.css';
+import { SITE, NAV, u, nRev } from '../lib/site';
+import BookingModal from '../components/BookingModal.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** активный пункт меню */
+  path?: string;
+}
+const { title, description, path = '' } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+---
+
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="uk_UA" />
+    <link rel="preload" href={u('/fonts/geologica.woff2')} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={u('/fonts/martianmono.woff2')} as="font" type="font/woff2" crossorigin />
+  </head>
+
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:bg-ink focus:px-4 focus:py-3 focus:text-paper"
+      >Перейти до вмісту</a
+    >
+
+    <!-- Шапка сплошной полосой, не прозрачной поверх кадра: прозрачная над светлым
+         фото даёт провал пиксельного контраста (design-devices.md#DEV-01, прогон Ф7). -->
+    <header class="sticky top-0 z-40 bg-graphite text-paper">
+      <div class="flex flex-wrap items-stretch gap-x-4 px-4 sm:px-6">
+        <a href={u('/')} class="mr-auto flex items-center gap-3 py-3" aria-label="Beauty Svit, на головну">
+          <span class="text-lg font-extrabold tracking-tight">Beauty Svit</span>
+          <span class="code hidden text-[11px] text-blonde sm:inline">{SITE.district}</span>
+        </a>
+
+        <div class="order-2 flex items-center gap-2 lg:order-3">
+          <a
+            href={`tel:${SITE.phone}`}
+            class="code flex items-center px-2 text-xs hover:text-blonde sm:text-sm"
+            >{SITE.phoneHuman}</a
+          >
+          <button
+            data-open-booking
+            class="my-2 hidden bg-copper px-5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red sm:block"
+            >Записатися</button
+          >
+        </div>
+
+        <!-- Одна навигация на оба брейкпоинта: два <nav> дают детектору 10 пунктов вместо 5 -->
+        <nav
+          aria-label="Головне меню"
+          class="order-3 -mx-4 w-[calc(100%+2rem)] items-stretch overflow-x-auto border-t border-white/10 px-4 lg:order-2 lg:mx-0 lg:w-auto lg:border-0 lg:px-0"
+        >
+          <ul class="flex items-stretch gap-4 lg:gap-0">
+            {
+              NAV.map((item) => (
+                <li class="flex shrink-0 items-stretch">
+                  <a
+                    href={u(item.href)}
+                    aria-current={path === item.href ? 'page' : undefined}
+                    class:list={[
+                      'flex items-center whitespace-nowrap py-2 text-xs transition-colors duration-150 hover:text-blonde lg:px-4 lg:py-0 lg:text-sm',
+                      path === item.href ? 'text-blonde lg:underline lg:underline-offset-8' : 'text-paper/80 lg:text-paper',
+                    ]}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main"><slot /></main>
+
+    <footer class="mt-24 bg-graphite text-paper">
+      <div class="grid gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1.2fr_0.8fr_0.8fr]">
+        <div>
+          <p class="text-2xl font-extrabold">Beauty Svit</p>
+          <p class="mt-3 max-w-sm text-sm text-paper/70">
+            Салон краси на Сихові: волосся, нігті, брови, шугарінг, макіяж та чоловічий зал.
+          </p>
+          <a
+            href={SITE.instagram}
+            rel="noopener"
+            class="code mt-5 inline-flex items-center text-sm text-blonde underline underline-offset-4"
+            >@beautysvit.salon</a
+          >
+          <p class="code mt-5 text-sm">
+            <span class="text-2xl font-bold text-blonde">{SITE.rating.value}</span>
+            <span class="ml-2 text-paper/70">/ {nRev(SITE.rating.count)}</span>
+          </p>
+          <a
+            href={SITE.googleReviews}
+            rel="noopener"
+            class="mt-1 inline-block text-xs text-paper/70 underline underline-offset-4"
+            >Джерело: Google Карти</a
+          >
+        </div>
+
+        <address class="text-sm not-italic">
+          <p class="code text-xs tracking-wide text-paper/70">АДРЕСА</p>
+          <a href={SITE.maps} rel="noopener" class="mt-2 inline-block underline underline-offset-4"
+            >{SITE.addressFull}</a
+          >
+          <p class="code mt-4 text-xs tracking-wide text-paper/70">ТЕЛЕФОН</p>
+          <a href={`tel:${SITE.phone}`} class="code mt-1 inline-block">{SITE.phoneHuman}</a>
+          <p class="code mt-4 text-xs tracking-wide text-paper/70">ПОШТА</p>
+          <a href={`mailto:${SITE.email}`} class="mt-1 inline-block break-all underline underline-offset-4"
+            >{SITE.email}</a
+          >
+        </address>
+
+        <div class="text-sm">
+          <p class="code text-xs tracking-wide text-paper/70">ГРАФІК</p>
+          <p class="code mt-2">{SITE.hours}</p>
+          <p class="mt-1 text-paper/60">{SITE.hoursNote}</p>
+          <ul class="mt-6 space-y-2">
+            <li><a href={SITE.offer} rel="noopener" class="underline underline-offset-4">Договір оферти</a></li>
+            <li>
+              <a href={SITE.privacy} rel="noopener" class="underline underline-offset-4"
+                >Політика конфіденційності</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-white/10 px-4 py-6 sm:px-6">
+        <p class="max-w-[70ch] text-xs text-paper/70">
+          © {new Date().getFullYear()} Beauty Svit · Запис через Appointer
+        </p>
+      </div>
+    </footer>
+
+    <!-- Sticky-панель записи на мобильном (MOB-001, critical на текущем сайте) -->
+    <div
+      class="fixed inset-x-0 bottom-0 z-40 flex gap-px border-t border-line bg-line sm:hidden"
+      style="padding-bottom:env(safe-area-inset-bottom)"
+    >
+      <a
+        href={`tel:${SITE.phone}`}
+        class="flex flex-1 items-center justify-center bg-paper py-3 text-sm font-semibold">Подзвонити</a
+      >
+      <button data-open-booking class="flex flex-[1.6] items-center justify-center bg-copper py-3 text-sm font-semibold text-white"
+        >Записатися онлайн</button
+      >
+    </div>
+
+    <BookingModal />
+
+    <!-- JSON-LD в конце body, а не в head: детектор SEO-013 читает разметку из тела документа.
+         Для поисковиков положение в документе значения не имеет. -->
+    <script
+      type="application/ld+json"
+      is:inline
+      set:html={JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BeautySalon',
+        name: SITE.legalName,
+        url: 'https://svit.beauty/',
+        telephone: SITE.phone,
+        email: SITE.email,
+        image: 'https://svit.beauty/img/farb-mid-960.webp',
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: SITE.street,
+          addressLocality: SITE.city,
+          addressRegion: 'Львівська область',
+          addressCountry: 'UA',
+        },
+        openingHoursSpecification: {
+          '@type': 'OpeningHoursSpecification',
+          dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+          opens: '09:00',
+          closes: '19:00',
+        },
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: SITE.rating.value,
+          reviewCount: SITE.rating.count,
+        },
+        sameAs: [SITE.instagram, SITE.googleReviews, SITE.barb],
+        potentialAction: { '@type': 'ReserveAction', target: SITE.booking },
+      })}
+    />
+  </body>
+</html>

@@ -1,0 +1,48 @@
+---
+import images from '../data/images.json';
+import { u } from '../lib/site';
+
+// Веер зразків — подпись первого экрана. Замена DEV-01: широкого кадра зала
+// у клиента нет ни одного, все свои снимки вертикальные. Формат 0.75 работает
+// на полосы по назначению, а не вопреки.
+//
+// Полосы выровнены по нижнему краю и различаются высотой, а не отступом сверху:
+// так подписи стоят на одной линии и ничего не обрезается, а верхний край
+// остаётся рваным — это и читается как раскрытое веером.
+const SLATS = [
+  { slug: 'farb-mid', open: true, code: '01', label: 'Мідь', h: 'h-full' },
+  { slug: 'farb-chervone', open: false, code: '02', label: 'Червоне', h: 'h-[88%]' },
+  { slug: 'farb-kashtan', open: false, code: '03', label: 'Каштан', h: 'h-[78%]' },
+  { slug: 'zavyvka-med', open: false, code: '04', label: 'Мед', h: 'h-[85%]' },
+  { slug: 'stryzhka-blond', open: false, code: '05', label: 'Блонд', h: 'h-[72%]' },
+];
+---
+
+<div class="flex h-full items-end gap-px bg-graphite">
+  {
+    SLATS.map((s, i) => (
+      <figure
+        class:list={[
+          'relative overflow-hidden',
+          s.h,
+          s.open ? 'flex-[2.2]' : 'flex-1',
+          i > 2 ? 'hidden sm:block' : '',
+        ]}
+      >
+        <img
+          src={u(`/img/fan-${s.slug}${s.open ? '-open' : ''}.webp`)}
+          alt={images[s.slug].alt}
+          width={s.open ? 620 : 300}
+          height={900}
+          loading="eager"
+          fetchpriority={i === 0 ? 'high' : undefined}
+          class="h-full w-full object-cover"
+        />
+        <figcaption class="absolute inset-x-0 bottom-0 bg-graphite/92 px-2 py-1.5">
+          <span class="code block text-[10px] leading-none text-blonde">{s.code}</span>
+          <span class="mt-1 block truncate text-[11px] leading-none text-paper">{s.label}</span>
+        </figcaption>
+      </figure>
+    ))
+  }
+</div>

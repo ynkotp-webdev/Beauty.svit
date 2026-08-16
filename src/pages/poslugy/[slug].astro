@@ -1,0 +1,250 @@
+---
+import Base from '../../layouts/Base.astro';
+import { SITE, LENGTHS, SERVICE_PAGES, u, fmtPrice, fmtDur, fmtDurRough, nPos } from '../../lib/site';
+import { splitTiers } from '../../lib/tiers';
+import price from '../../data/price.json';
+import images from '../../data/images.json';
+
+export function getStaticPaths() {
+  return SERVICE_PAGES.map((p) => ({ params: { slug: p.slug } }));
+}
+
+const { slug } = Astro.params;
+const page = SERVICE_PAGES.find((p) => p.slug === slug)!;
+const catByName = Object.fromEntries(price.map((c) => [c.name, c]));
+const cats = page.cats.map((n) => catByName[n]).filter(Boolean);
+const items = cats.flatMap((c) => c.items);
+const notes = cats.flatMap((c) => c.notes);
+
+const prices = items.map((i) => i.price);
+const minP = Math.min(...prices);
+const maxP = Math.max(...prices);
+const durs = items.map((i) => i.duration).filter((d) => d > 0);
+const minD = Math.min(...durs);
+const maxD = Math.max(...durs);
+
+// Этапы визита берутся из описания, которое салон написал сам в своей CRM.
+// Длительность отдельного этапа нигде не зафиксирована, поэтому не выдумывается:
+// на оси стоит только реальное общее время позиции.
+const flagship = items.reduce((a, b) => ((b.desc?.length ?? 0) > (a.desc?.length ?? 0) ? b : a));
+const stages = (flagship.desc || '')
+  .split(/[,.]\s+/)
+  .map((s) => s.trim().replace(/\.$/, ''))
+  .filter((s) => s.length > 3 && !/^Тривалість/i.test(s))
+  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+  .slice(0, 6);
+
+const masters = [...new Set(items.flatMap((i) => i.masters))];
+const usesLength = items.some((i) => /довжина/i.test(i.name));
+const { tiered } = splitTiers(items);
+const img = images[page.photo];
+
+const others = SERVICE_PAGES.filter((p) => p.slug !== slug).slice(0, 6);
+---
+
+<Base
+  title={`${page.title} у Львові на Сихові — ціни та тривалість, Beauty Svit`}
+  description={`${page.title} у салоні Beauty Svit, вул. Сихівська 7, Львів. Ціна ${minP}–${maxP} ₴, тривалість від ${fmtDurRough(minD)}. ${nPos(items.length)} у прайсі, онлайн-запис 24/7.`}
+>
+  <!-- ── Шапка услуги: снимок и сухие числа рядом ── -->
+  <section class="grid gap-px bg-line lg:grid-cols-[1.15fr_0.85fr]">
+    <div class="bg-paper px-5 py-12 sm:px-8 lg:py-16">
+      <nav aria-label="Хлібні крихти" class="code text-xs text-ink-muted">
+        <a href={u('/')} class="inline-link underline underline-offset-4">Головна</a>
+        <span class="mx-2">/</span>
+        <a href={u('/tsiny/')} class="inline-link underline underline-offset-4">Ціни</a>
+      </nav>
+
+      <h1 class="mt-6 text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
+        {page.title}
+      </h1>
+
+      <dl class="code mt-8 grid grid-cols-2 gap-x-8 gap-y-4 border-t border-line pt-6 text-xs sm:grid-cols-4">
+        <div>
+          <dt class="text-ink-muted">ЦІНА</dt>
+          <dd class="mt-1 text-sm font-bold whitespace-nowrap">{fmtPrice(minP)}–{fmtPrice(maxP)} ₴</dd>
+        </div>
+        <div>
+          <dt class="text-ink-muted">ТРИВАЛІСТЬ</dt>
+          <dd class="mt-1 text-sm font-bold">{fmtDurRough(minD)}{minD !== maxD && <span> – {fmtDurRough(maxD)}</span>}</dd>
+        </div>
+        <div>
+          <dt class="text-ink-muted">ПОЗИЦІЙ</dt>
+          <dd class="mt-1 text-sm font-bold">{items.length}</dd>
+        </div>
+        <div>
+          <dt class="text-ink-muted">ВИКОНУЮТЬ</dt>
+          <dd class="mt-1 text-sm font-bold">{masters.length}</dd>
+        </div>
+      </dl>
+
+      <a
+        href="#booking"
+        class="mt-8 inline-flex items-center bg-copper px-7 py-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-red"
+        >Обрати час</a
+      >
+    </div>
+
+    <figure class="bg-graphite">
+      <img
+        src={u(`/img/${page.photo}-960.webp`)}
+        srcset={`${u(`/img/${page.photo}-480.webp`)} 480w, ${u(`/img/${page.photo}-960.webp`)} 960w`}
+        sizes="(min-width:1024px) 42vw, 100vw"
+        alt={img.alt}
+        width={img.w}
+        height={img.h}
+        loading="eager"
+        fetchpriority="high"
+        class="h-full max-h-[70svh] w-full object-cover"
+      />
+    </figure>
+  </section>
+
+  <!-- ── Візит по хвилинах: назначенная структура этой поверхности ── -->
+  {
+    stages.length > 1 && (
+      <section class="border-b border-line px-5 py-14 sm:px-8" aria-labelledby="vizyt">
+        <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <h2 id="vizyt" class="text-3xl font-extrabold tracking-tight sm:text-4xl">Як минає візит</h2>
+            <p class="measure mt-4 text-sm leading-relaxed text-ink-muted">
+              Порядок роботи, який салон описав у своєму записнику. Загальний час позиції вказано
+              в прайсі; окремі етапи ми не хронометруємо, тому й не вигадуємо для них хвилини.
+            </p>
+            <p class="code mt-6 text-sm">
+              <span class="text-ink-muted">РАЗОМ</span>
+              <span class="ml-3 text-2xl font-bold text-copper">{fmtDur(flagship.duration)}</span>
+            </p>
+            <p class="code mt-1 text-xs text-ink-muted">на позицію «{flagship.name}»</p>
+          </div>
+
+          <ol class="relative border-l-2 border-line pl-8">
+            {stages.map((s, i) => (
+              <li class="relative pb-7 last:pb-0">
+                <span class="code absolute top-0 -left-[2.6rem] flex h-8 w-8 items-center justify-center bg-copper text-xs font-bold text-white">
+                  {i + 1}
+                </span>
+                <p class="measure text-base leading-relaxed">{s}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ── Шкала довжин показывается только там, где цена от неё зависит ── -->
+  {
+    usesLength && (
+      <section class="bg-graphite px-5 py-14 text-paper sm:px-8">
+        <div class="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">
+              Ціна за довжиною <span class="text-blonde">1–5</span>
+            </h2>
+            <p class="measure mt-4 text-sm leading-relaxed text-paper/75">
+              Довжина визначається за нашою шкалою, а не на око. Густе волосся або перше фарбування
+              додає 10%.
+            </p>
+          </div>
+          <ol class="grid gap-x-8 sm:grid-cols-2">
+            {LENGTHS.map((l) => (
+              <li class="flex items-baseline gap-4 border-b border-white/15 py-3">
+                <span class="code text-xl font-bold text-blonde">{l.n}</span>
+                <span class="text-sm text-paper/85">{l.label}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+    )
+  }
+
+  <!-- ── Прайс услуги ── -->
+  <section class="px-5 py-14 sm:px-8" aria-labelledby="prays">
+    <h2 id="prays" class="text-3xl font-extrabold tracking-tight sm:text-4xl">Прайс</h2>
+
+    {
+      notes.length > 0 && (
+        <ul class="mt-6 space-y-2">
+          {notes.map((n) => (
+            <li class="measure border-l-2 border-copper pl-4 text-sm text-ink-muted">
+              <strong class="font-semibold text-ink">{n.title}.</strong> {n.text}
+            </li>
+          ))}
+        </ul>
+      )
+    }
+
+    <ul class="mt-8">
+      {
+        items.map((it, i) => (
+          <li class="service-card hair grid grid-cols-[auto_1fr_auto] items-baseline gap-x-4 gap-y-1 py-4 sm:gap-x-8">
+            <span class="code text-xs text-ink-muted">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <p class="text-base font-semibold">{it.name}</p>
+              <p class="code mt-1 text-xs text-ink-muted">
+                {fmtDur(it.duration)}
+                {it.masters.length > 0 && <span> · {it.masters.join(', ')}</span>}
+                {it.premium && <span class="ml-2 text-copper">ТОП-майстер</span>}
+              </p>
+              {it.desc && <p class="measure mt-1 text-xs text-ink-muted">{it.desc}</p>}
+            </div>
+            <span class="code text-sm font-bold whitespace-nowrap">{fmtPrice(it.price)} ₴</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    {
+      tiered.length > 0 && (
+        <p class="measure mt-5 text-xs text-ink-muted">
+          Різниця в ціні всередині категорії означає різного виконавця, а не різний обсяг роботи.
+        </p>
+      )
+    }
+
+    <a
+      href="#booking"
+      class="mt-8 inline-flex items-center bg-copper px-7 py-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-red"
+      >Обрати час і майстра</a
+    >
+  </section>
+
+  <!-- ── Другие услуги: строками, без карточек ── -->
+  <section class="border-t border-line px-5 py-14 sm:px-8">
+    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Інші послуги</h2>
+    <ul class="mt-6 grid gap-x-10 sm:grid-cols-2">
+      {
+        others.map((o) => (
+          <li class="hair">
+            <a href={u(`/poslugy/${o.slug}/`)} class="flex items-center justify-between gap-4 py-3 text-base hover:text-copper">
+              <span>{o.title}</span>
+              <span class="code text-xs text-ink-muted">→</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: page.title,
+      serviceType: page.title,
+      areaServed: { '@type': 'City', name: 'Львів' },
+      provider: { '@type': 'BeautySalon', name: SITE.legalName, telephone: SITE.phone },
+      offers: {
+        '@type': 'AggregateOffer',
+        priceCurrency: 'UAH',
+        lowPrice: minP,
+        highPrice: maxP,
+        offerCount: items.length,
+      },
+    })}
+  />
+</Base>

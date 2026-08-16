@@ -1,0 +1,94 @@
+---
+import Base from '../layouts/Base.astro';
+import { u, nShot } from '../lib/site';
+import images from '../data/images.json';
+
+// Только свои снимки. С прежнего сайта не перенесено ни одного изображения из интернета:
+// около половины его галереи — чужие работы (имена файлов выдают Pinterest и чужі акаунти).
+const GROUPS = [
+  {
+    title: 'Волосся',
+    slugs: ['farb-mid', 'farb-chervone', 'farb-kashtan', 'farb-mokko', 'zavyvka-med', 'stryzhka-kare', 'stryzhka-blond'],
+    note: 'Фарбування, тонування, біозавивка та стрижки. Знято в залі на Сихівській.',
+  },
+  {
+    title: 'Нігті',
+    slugs: ['manikur-nyud', 'manikur-dyzajn', 'manikur-rozhev', 'manikur-perl', 'manikur-vyshn', 'pedykur-rozhev'],
+    note: 'Манікюр і педикюр. Дизайн оцінюється за референсом, який ви покажете майстру.',
+  },
+  {
+    title: 'Брови',
+    slugs: ['brovy-proces', 'brovy-portret'],
+    note: 'Ламінування та корекція. Один кадр зроблено просто під час роботи.',
+  },
+  {
+    title: 'Інструмент',
+    slugs: ['instrument-nozhyci', 'instrument-nasadky', 'instrument-kusachky'],
+    note: 'Наш інструмент після обробки. Заточкою займаємось самі, тому й показуємо.',
+  },
+];
+---
+
+<Base
+  path="/roboty/"
+  title="Роботи майстрів Beauty Svit — фарбування, стрижки, манікюр, Львів"
+  description="Реальні роботи салону краси Beauty Svit на Сихові у Львові: фарбування та тонування волосся, біозавивка, стрижки, манікюр, педикюр, брови. Знято в залі, без ретуші."
+>
+  <section class="border-b border-line px-5 pt-14 pb-10 sm:px-8">
+    <h1 class="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">Роботи</h1>
+    <p class="measure mt-5 text-base leading-relaxed text-ink-muted">
+      Усе знято в нашому залі на телефон, без ретуші й без чужих фото з інтернету. Якщо кадр
+      виглядає буденно, це тому, що він справжній.
+    </p>
+  </section>
+
+  {
+    GROUPS.map((g, gi) => (
+      <section
+        class:list={['px-5 py-12 sm:px-8', gi % 2 === 1 ? 'bg-graphite text-paper' : '']}
+        aria-labelledby={`g-${gi}`}
+      >
+        <div class="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-2">
+          <h2 id={`g-${gi}`} class="text-2xl font-extrabold tracking-tight sm:text-4xl">
+            {g.title}
+          </h2>
+          <span class="code text-xs opacity-60">{nShot(g.slugs.length)}</span>
+        </div>
+        <p class:list={['measure mt-3 text-sm', gi % 2 === 1 ? 'text-paper/70' : 'text-ink-muted']}>
+          {g.note}
+        </p>
+
+        {/* Мозаика columns (DEV-07): снимки сохраняют свои пропорции, 0.75 и 1.33 вперемешку */}
+        <div class="mt-8 columns-2 gap-3 md:columns-3 lg:columns-4">
+          {g.slugs.map((s) => (
+            <figure class="mb-3 break-inside-avoid">
+              <img
+                src={u(`/img/${s}-480.webp`)}
+                srcset={`${u(`/img/${s}-480.webp`)} 480w, ${u(`/img/${s}-960.webp`)} 960w`}
+                sizes="(min-width:1024px) 25vw, (min-width:768px) 33vw, 50vw"
+                alt={images[s].alt}
+                width={images[s].w}
+                height={images[s].h}
+                loading="lazy"
+                class="w-full"
+              />
+            </figure>
+          ))}
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="px-5 py-16 sm:px-8">
+    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Хочете так само</h2>
+    <p class="measure mt-4 text-sm text-ink-muted">
+      Покажіть майстру референс на місці або в коментарі до запису. Для складного кольору
+      попередня консультація обовʼязкова, вона входить у вартість.
+    </p>
+    <a
+      href="#booking"
+      class="mt-8 inline-flex items-center bg-copper px-7 py-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-red"
+      >Обрати час</a
+    >
+  </section>
+</Base>

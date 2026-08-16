@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, SERVICE_PAGES, u, fmtPrice, nRev } from '../lib/site';
+import price from '../data/price.json';
+import masters from '../data/masters.json';
+
+// Что делает каждый мастер — считается из прайса, а не заявляется отдельно.
+const catByName = Object.fromEntries(price.map((c) => [c.name, c]));
+const pageOf = (catName: string) => SERVICE_PAGES.find((p) => p.cats.includes(catName as never));
+
+const team = masters
+  .map((m) => {
+    const does = price
+      .filter((c) => c.items.some((i) => i.masters.includes(m.name)))
+      .map((c) => ({ name: c.name, page: pageOf(c.name) }));
+    const items = price.flatMap((c) => c.items).filter((i) => i.masters.includes(m.name));
+    const from = items.length ? Math.min(...items.map((i) => i.price)) : null;
+    return { ...m, does, count: items.length, from };
+  })
+  .filter((m) => m.count > 0)
+  .sort((a, b) => b.reviews - a.reviews);
+
+// Тон-образец на карточку: мастер читается как позиция в веере, а не как пустой аватар.
+const TONES = ['bg-copper', 'bg-red', 'bg-chestnut', 'bg-honey', 'bg-graphite'];
+---
+
+<Base
+  path="/majstry/"
+  title="Майстри салону Beauty Svit — записатися до конкретного майстра, Львів"
+  description="Майстри салону краси Beauty Svit на Сихові: колорист, перукар-універсал, майстер манікюру, бровист, майстер шугарінгу. Оберіть майстра або найближчий вільний час."
+>
+  <section class="border-b border-line px-5 pt-14 pb-10 sm:px-8">
+    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div>
+        <h1 class="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">Майстри</h1>
+        <p class="measure mt-5 text-base leading-relaxed text-ink-muted">
+          Запис можна почати з майстра, якщо ви вже знаєте, до кого йдете. Якщо ні, є другий шлях:
+          обрати послугу й узяти найближчий вільний час у будь-кого, хто її виконує.
+        </p>
+      </div>
+
+      <!-- Второй путь стоит рядом и равноправно, а не прячется (PLB-020) -->
+      <div class="border border-line p-6">
+        <p class="code text-xs tracking-widest text-ink-muted">БЕЗ ВИБОРУ МАЙСТРА</p>
+        <p class="mt-3 text-base">Найближчий вільний час у того, хто вільний.</p>
+        <a
+          href="#booking"
+          class="mt-5 inline-flex items-center bg-ink px-6 py-3 text-sm font-semibold text-white"
+          >Показати вільні години</a
+        >
+      </div>
+    </div>
+  </section>
+
+  <ul>
+    {
+      team.map((m, i) => (
+        <li class="border-b border-line">
+          <div class="grid gap-6 px-5 py-10 sm:px-8 lg:grid-cols-[auto_1.1fr_0.9fr] lg:items-start lg:gap-10">
+            {/* Фото майстрів у салону немає — див. README, розділ «що потрібно від власника».
+                Замість стокового обличчя ставимо зразок із кодом: чесно й у логіці віяла. */}
+            <div
+              class:list={[
+                'flex h-28 w-28 shrink-0 items-center justify-center text-white',
+                TONES[i % TONES.length],
+              ]}
+              aria-hidden="true"
+            >
+              <span class="code text-4xl font-bold">{m.name.slice(0, 1)}</span>
+            </div>
+
+            <div>
+              <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{m.name}</h2>
+              <p class="mt-1 text-base text-ink-muted">{m.role}</p>
+
+              <dl class="code mt-5 flex flex-wrap gap-x-8 gap-y-2 text-xs">
+                {m.reviews > 0 && (
+                  <div>
+                    <dt class="text-ink-muted">ОЦІНКА В ЗАСТОСУНКУ</dt>
+                    <dd class="mt-1 text-sm font-bold">
+                      {m.rate!.toFixed(2)} <span class="font-normal text-ink-muted">/ {nRev(m.reviews)}</span>
+                    </dd>
+                  </div>
+                )}
+                <div>
+                  <dt class="text-ink-muted">ПОЗИЦІЙ У ПРАЙСІ</dt>
+                  <dd class="mt-1 text-sm font-bold">{m.count}</dd>
+                </div>
+                {m.from !== null && (
+                  <div>
+                    <dt class="text-ink-muted">ВІД</dt>
+                    <dd class="mt-1 text-sm font-bold">{fmtPrice(m.from)} ₴</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            <div>
+              <p class="code text-xs tracking-widest text-ink-muted">ЩО ВИКОНУЄ</p>
+              <ul class="mt-3 space-y-1 text-sm">
+                {m.does.map((d) => (
+                  <li>
+                    {d.page ? (
+                      <a href={u(`/poslugy/${d.page.slug}/`)} class="inline-link underline underline-offset-4 hover:text-copper">
+                        {d.name}
+                      </a>
+                    ) : (
+                      <span>{d.name}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+              <a
+                href="#booking"
+                class="mt-6 inline-flex items-center bg-copper px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red"
+              >
+                Обрати час · {m.name}
+              </a>
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+
+  <section class="px-5 py-14 sm:px-8">
+    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Як проходить запис</h2>
+    <ol class="measure mt-6 space-y-4 text-sm">
+      <li class="hair flex gap-4 pb-4">
+        <span class="code shrink-0 font-bold text-copper">1</span>
+        <span>Обираєте послугу або майстра. Ціну й тривалість видно одразу, до вибору часу.</span>
+      </li>
+      <li class="hair flex gap-4 pb-4">
+        <span class="code shrink-0 font-bold text-copper">2</span>
+        <span>Обираєте вільну годину. Розклад живий, працює цілодобово.</span>
+      </li>
+      <li class="hair flex gap-4 pb-4">
+        <span class="code shrink-0 font-bold text-copper">3</span>
+        <span>Залишаєте імʼя й телефон. Підтвердження приходить у Telegram або Viber.</span>
+      </li>
+      <li class="flex gap-4">
+        <span class="code shrink-0 font-bold text-copper">4</span>
+        <span>
+          Якщо ви у нас вперше, адміністратор додатково напише у Viber і надішле відео, як дійти
+          від ТЦ «Сихів».
+        </span>
+      </li>
+    </ol>
+    <p class="measure mt-6 text-xs text-ink-muted">
+      Перенести або скасувати запис можна без наслідків не пізніше ніж за 24 години до візиту.
+    </p>
+    <a
+      href={`tel:${SITE.phone}`}
+      class="code mt-8 inline-flex items-center text-sm text-copper underline underline-offset-4"
+      >{SITE.phoneHuman}</a
+    >
+  </section>
+</Base>

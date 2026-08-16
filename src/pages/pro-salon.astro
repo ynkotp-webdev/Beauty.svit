@@ -1,0 +1,140 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, u } from '../lib/site';
+import images from '../data/images.json';
+
+// Марки названы те, что салон сам указал в описаниях своих услуг в CRM.
+const BRANDS = [
+  { name: 'KayPro', what: 'холодне відновлення волосся у складних освітленнях і виходах із чорного' },
+  { name: 'Viart', what: 'аміно-ліпідне відновлення без силіконів і плівок' },
+  { name: 'Італійські склади', what: 'біозавивка без аміаку' },
+];
+---
+
+<Base
+  path="/pro-salon/"
+  title="Про салон краси Beauty Svit на Сихові, Львів"
+  description="Салон краси Beauty Svit працює на вул. Сихівській, 7 у Львові. Фіксовані ціни з включеною фарбою, власна шкала довжин, догляд для дому на ресепшені."
+>
+  <section class="border-b border-line px-5 pt-14 pb-12 sm:px-8">
+    <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+      <div>
+        <h1 class="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
+          Салон на Сихівській, 7
+        </h1>
+        <p class="measure mt-6 text-lg leading-relaxed">
+          Ми працюємо з волоссям, нігтями й бровами в одному залі. Головне, чим ми відрізняємось,
+          не атмосфера й не епітети: у нас порахована ціна. Довжина визначається за шкалою,
+          матеріали входять у вартість, а тривалість написана заздалегідь.
+        </p>
+      </div>
+
+      <!-- Цифры со страницы владельца. Помечены как его заявление, а не как наш замер. -->
+      <dl class="code grid grid-cols-3 gap-4 self-start border-t border-line pt-6 text-center">
+        <div>
+          <dt class="text-xs text-ink-muted">РОКИ</dt>
+          <dd class="mt-1 text-3xl font-bold text-copper">{SITE.claims.years}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">ВІЗИТІВ ЗА РІК</dt>
+          <dd class="mt-1 text-3xl font-bold text-copper">{SITE.claims.visitsPerYear}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">СПЕЦІАЛІСТІВ</dt>
+          <dd class="mt-1 text-3xl font-bold text-copper">{SITE.claims.staff}</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ── Як рахується ціна ── -->
+  <section class="bg-graphite px-5 py-16 text-paper sm:px-8">
+    <h2 class="text-3xl font-extrabold tracking-tight sm:text-5xl">Як рахується ціна</h2>
+    <div class="mt-10 grid gap-8 lg:grid-cols-3">
+      <div class="border-t border-white/20 pt-5">
+        <p class="code text-xs tracking-widest text-blonde">ДОВЖИНА</p>
+        <p class="measure mt-3 text-sm leading-relaxed text-paper/85">
+          Шкала від 1 до 5, від «вуха відкриті» до «нижче середини лопатки». Її видно в прайсі
+          поруч із кожною ціною, тому суму можна порахувати самостійно, ще до дзвінка.
+        </p>
+      </div>
+      <div class="border-t border-white/20 pt-5">
+        <p class="code text-xs tracking-widest text-blonde">МАТЕРІАЛИ</p>
+        <p class="measure mt-3 text-sm leading-relaxed text-paper/85">
+          Фарба завжди включена у вартість. У складних освітленнях у ціну входить і відновлення.
+          Єдина надбавка на фарбуванні — 10% за густе волосся або перше фарбування.
+        </p>
+      </div>
+      <div class="border-t border-white/20 pt-5">
+        <p class="code text-xs tracking-widest text-blonde">ЧАС</p>
+        <p class="measure mt-3 text-sm leading-relaxed text-paper/85">
+          Тривалість указана в кожній позиції прайса: від 10 хвилин на ремонт нігтя до 5–6 годин
+          на вихід із чорного. Ви плануєте день, а не гадаєте.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Инструмент: показываем то, что действительно можем показать ── -->
+  <section class="grid gap-px bg-line lg:grid-cols-[0.9fr_1.1fr]">
+    <div class="bg-paper px-5 py-14 sm:px-8">
+      <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Інструмент</h2>
+      <p class="measure mt-5 text-base leading-relaxed text-ink-muted">
+        Заточка інструмента — окрема послуга нашого салону, а не сторонній підряд. Ножиці, кусачки
+        й машинки ми обслуговуємо самі, тому знаємо стан кожної одиниці, з якою працюємо.
+      </p>
+      <p class="measure mt-4 text-sm text-ink-muted">
+        Розгорнутий опис протоколів обробки готуємо разом із власником: писати про стерилізацію
+        загальними словами ми не хочемо.
+      </p>
+    </div>
+    <div class="grid grid-cols-3 gap-px bg-line">
+      {
+        ['instrument-nozhyci', 'instrument-nasadky', 'instrument-kusachky'].map((s) => (
+          <img
+            src={u(`/img/${s}-480.webp`)}
+            srcset={`${u(`/img/${s}-480.webp`)} 480w, ${u(`/img/${s}-960.webp`)} 960w`}
+            sizes="33vw"
+            alt={images[s].alt}
+            width={images[s].w}
+            height={images[s].h}
+            loading="lazy"
+            class="h-full min-h-[180px] w-full object-cover"
+          />
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ── Марки ── -->
+  <section class="px-5 py-14 sm:px-8">
+    <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">На чому працюємо</h2>
+    <ul class="mt-8 max-w-3xl">
+      {
+        BRANDS.map((b) => (
+          <li class="hair grid grid-cols-[auto_1fr] items-baseline gap-x-6 py-4">
+            <span class="code text-base font-bold text-copper">{b.name}</span>
+            <span class="measure text-sm text-ink-muted">{b.what}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="measure mt-6 text-sm text-ink-muted">
+      Догляд для дому можна купити на ресепшені. Майстер підбере засіб під ваш тип волосся:
+      правильний догляд тримає колір і завиток довше, ніж будь-яка обіцянка на сайті.
+    </p>
+  </section>
+
+  <section class="bg-copper px-5 py-16 text-center text-white sm:px-8">
+    <h2 class="text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">
+      Порахуйте свою ціну
+    </h2>
+    <p class="measure mx-auto mt-4 text-base text-white">
+      Прайс відкритий повністю: {' '}
+      <a href={u('/tsiny/')} class="inline-link underline underline-offset-4">усі позиції з часом і сумою</a>.
+    </p>
+    <a href="#booking" class="mt-8 inline-flex items-center bg-paper px-8 py-4 text-base font-semibold text-ink"
+      >Обрати час</a
+    >
+  </section>
+</Base>

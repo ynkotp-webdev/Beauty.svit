@@ -1,0 +1,70 @@
+---
+import { SITE } from '../lib/site';
+---
+
+<!-- Платформа записи клиента сохраняется: в Appointer расписание, прайс и база.
+     Виджет встраивается модально и обрамляется токенами сайта (design-antipatterns.md#ERR-043).
+     Внутрь iframe стилями не достать — это чужой домен; наша зона — рамка, шапка и путь к ней. -->
+<dialog
+  id="booking"
+  aria-labelledby="booking-title"
+  class="w-[min(100vw-1rem,860px)] bg-paper p-0 text-ink backdrop:backdrop-blur-sm"
+>
+  <div class="flex items-center justify-between gap-4 bg-graphite px-4 py-3 text-paper">
+    <div>
+      <h2 id="booking-title" class="text-base font-semibold">Онлайн-запис</h2>
+      <p class="code mt-0.5 text-[11px] text-blonde">ЦІНИ ТА ВІЛЬНИЙ ЧАС · 24/7</p>
+    </div>
+    <button
+      data-close-booking
+      class="px-3 text-2xl leading-none text-paper hover:text-blonde"
+      aria-label="Закрити вікно запису">×</button
+    >
+  </div>
+
+  <iframe
+    data-booking-frame
+    title="Онлайн-запис до салону Beauty Svit"
+    loading="lazy"
+    class="block h-[min(78vh,760px)] w-full border-0 bg-paper"
+    src="about:blank"
+    data-src={SITE.booking}></iframe>
+
+  <p class="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line px-4 py-3 text-xs text-ink-muted">
+    <span>Не виходить записатися?</span>
+    <a href={`tel:${SITE.phone}`} class="inline-link font-semibold text-copper underline underline-offset-4"
+      >{SITE.phoneHuman}</a
+    >
+    <a href={SITE.booking} rel="noopener" class="inline-link underline underline-offset-4"
+      >Відкрити запис окремою сторінкою</a
+    >
+  </p>
+</dialog>
+
+<script>
+  const dlg = document.getElementById('booking') as HTMLDialogElement | null;
+  const frame = dlg?.querySelector<HTMLIFrameElement>('[data-booking-frame]');
+
+  // iframe грузится только при первом открытии: виджет тянет свой бандл и шрифты
+  const open = () => {
+    if (!dlg) return;
+    if (frame && frame.src === 'about:blank' && frame.dataset.src) frame.src = frame.dataset.src;
+    dlg.showModal();
+  };
+
+  document.querySelectorAll('[data-open-booking]').forEach((b) => b.addEventListener('click', open));
+  dlg?.querySelector('[data-close-booking]')?.addEventListener('click', () => dlg.close());
+
+  // клик по подложке закрывает — у <dialog> клик приходит на сам элемент
+  dlg?.addEventListener('click', (e) => {
+    if (e.target === dlg) dlg.close();
+  });
+
+  // ссылки вида href="#booking" тоже открывают модалку (кнопки внутри секций)
+  document.querySelectorAll('a[href="#booking"]').forEach((a) =>
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      open();
+    }),
+  );
+</script>

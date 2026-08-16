@@ -1,0 +1,328 @@
+---
+import Base from '../layouts/Base.astro';
+import Fan from '../components/Fan.astro';
+import { SITE, LENGTHS, SERVICE_PAGES, u, fmtPrice, fmtDur, nPos } from '../lib/site';
+import price from '../data/price.json';
+import images from '../data/images.json';
+
+// «від» берётся не с потолка: это реальная минимальная позиция категории,
+// и рядом всегда сказано, какой довжині она соответствует (conv-beauty.md#ERR-020).
+const catByName = Object.fromEntries(price.map((c) => [c.name, c]));
+const rows = SERVICE_PAGES.map((p) => {
+  const items = p.cats.flatMap((n) => catByName[n]?.items ?? []);
+  const ps = items.map((i) => i.price);
+  const min = Math.min(...ps);
+  const max = Math.max(...ps);
+  const ds = items.map((i) => i.duration).filter((d) => d > 0);
+  return { ...p, min, max, minDur: Math.min(...ds), count: items.length };
+});
+
+const GALLERY = [
+  'farb-chervone', 'manikur-nyud', 'stryzhka-kare', 'farb-mokko', 'manikur-dyzajn',
+  'zavyvka-med', 'brovy-proces', 'manikur-vyshn', 'stryzhka-blond', 'pedykur-rozhev',
+  'manikur-rozhev', 'farb-kashtan',
+];
+
+// Отзывы перенесены с первоисточниками: имя, дата и ссылка на профиль автора (PLB-071).
+// Тексты не редактировались и не сочинялись.
+const REVIEWS = [
+  { name: 'Маряна Богданова', date: '27.05.2026', href: 'https://www.google.com/maps/contrib/102820068921903704285/reviews',
+    text: 'Шугарінг зробили дуже акуратно та комфортно, а брови — саме такі, як хотіла. Майстри тут дуже уважні, теплі та приємні люди.' },
+  { name: 'Tetiana Baisa', date: '18.04.2026', href: 'https://www.google.com/maps/contrib/116510016117695902861/reviews',
+    text: 'Вже більше року як наважилася вперше пофарбувати волосся та довірила це салону. Юля — чудовий майстер, я знаю, що моє волосся в надійних руках. Педикюр у Надії — без перебільшення найкраще.' },
+  { name: 'Екатерина', date: '26.01.2026', href: 'https://www.google.com/maps/contrib/111218576845576719698/reviews',
+    text: 'Я була в дорозі майже добу, і макіяж досі виглядає так, ніби його щойно зробили. Це рівень, це якість.' },
+  { name: 'Наталия Дмитришин', date: '14.01.2026', href: 'https://www.google.com/maps/contrib/112295287117516991164/reviews',
+    text: 'Щиро дякую майстрам Юлії та Іванці за неймовірну біозавивку! Ви перевершили мої очікування.' },
+];
+
+const nRevHome = SITE.rating.count;
+
+const FAQ = [
+  { q: 'Скільки коштує саме мій випадок?', a: 'Ціна залежить від довжини волосся за нашою шкалою 1–5 і вказана в прайсі для кожної довжини окремо. Густе волосся або перше фарбування додає 10%. Інших доплат за фарбування немає.' },
+  { q: 'Чи доплачувати за фарбу?', a: 'Ні. Фарба завжди включена у вартість, для всіх фарбувань. Ціна фіксована й містить усі обовʼязкові опції.' },
+  { q: 'Який у вас розклад роботи?', a: 'Працюємо щодня з понеділка по неділю, з 9:00 до 19:00. Окрім великих свят.' },
+  { q: 'Скільки часу займає манікюр або нарощування нігтів?', a: 'Манікюр з покриттям триває 2 години. Нарощування нігтів або корекція нарощення триває 3 години. Хронометраж кожної позиції вказано в прайсі.' },
+  { q: 'Чи можна записатися онлайн і як це зробити?', a: 'Так, онлайн-запис доступний цілодобово. Якщо ви у нас вперше, ми додатково підтвердимо запис у Viber та надішлемо відео, як дійти до салону від ТЦ «Сихів».' },
+  { q: 'Що таке біозавивка і чим вона відрізняється від хімічної?', a: 'Це мʼяка процедура створення локонів на складах з натуральних компонентів, без аміаку. Вона не руйнує структуру волосся й виглядає природніше за традиційну хімічну завивку. Тримається від 2 до 5 місяців.' },
+];
+---
+
+<Base
+  title="Салон краси на Сихові — Beauty Svit, вул. Сихівська 7, Львів"
+  description="Салон краси Beauty Svit на Сихові у Львові: фарбування, стрижка, біозавивка, манікюр, педикюр, брови, шугарінг. Ціни за шкалою довжин 1–5, фарба включена у вартість. Онлайн-запис 24/7."
+>
+  <!-- ── 1. Перший екран: віяло зразків ──────────────────────────────
+       Текст лежит на сплошном блоке, а не поверх кадра: контраст 13.27:1
+       гарантирован конструкцией, а не удачей снимка. -->
+  <section class="relative flex min-h-[86svh] flex-col lg:min-h-[72svh] lg:flex-row">
+    <div class="order-2 flex flex-1 flex-col justify-between gap-8 bg-graphite px-5 py-8 text-paper sm:px-8 lg:order-1 lg:max-w-[46%] lg:py-14">
+      <div>
+        <h1 class="text-[2.4rem] leading-[1.02] font-extrabold tracking-tight sm:text-6xl lg:text-[4.1rem]">
+          Салон краси<br />на Сихові
+        </h1>
+        <p class="mt-5 max-w-md text-base leading-relaxed text-paper/80 sm:text-lg">
+          Волосся, нігті, брови та шугарінг на вул. Сихівській, 7. Ціну рахуємо не на око: у нас своя шкала довжин, а фарба вже включена у вартість.
+        </p>
+      </div>
+
+      <div>
+        <a
+          href="#booking"
+          class="inline-flex items-center bg-copper px-7 py-4 text-base font-semibold text-white transition-colors duration-150 hover:bg-red"
+        >
+          Обрати час і побачити ціну
+        </a>
+
+        <!-- легенда зразка: реальные числа салона, а не эпитеты -->
+        <dl class="code mt-7 grid max-w-lg grid-cols-2 gap-x-6 gap-y-3 border-t border-white/15 pt-5 text-xs sm:grid-cols-4">
+          <div>
+            <dt class="text-paper/70">СТРИЖКА, ДОВЖИНА 1</dt>
+            <dd class="mt-1 text-sm text-blonde">590 ₴ · 1 год</dd>
+          </div>
+          <div>
+            <dt class="text-paper/70">МАНІКЮР КОМПЛЕКС</dt>
+            <dd class="mt-1 text-sm text-blonde">750 ₴ · 2 год</dd>
+          </div>
+          <div><dt class="text-paper/70">ГРАФІК</dt><dd class="mt-1 text-sm">9:00–19:00</dd></div>
+          <div><dt class="text-paper/70">ЗАПИС</dt><dd class="mt-1 text-sm">24/7</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="relative order-1 h-[30svh] shrink-0 lg:order-2 lg:h-auto lg:flex-1">
+      <div class="absolute inset-0"><Fan /></div>
+    </div>
+  </section>
+
+  <!-- ── 2. Шкала довжин: легенда, по которой считается вся страница ── -->
+  <section class="border-b border-line px-5 py-14 sm:px-8" aria-labelledby="dovzhyna">
+    <div class="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <h2 id="dovzhyna" class="text-3xl font-extrabold tracking-tight sm:text-4xl">
+          Довжина <span class="text-copper">1–5</span>
+        </h2>
+        <p class="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
+          Ціна на роботу з волоссям залежить від довжини. Щоб її не визначали на око, у нас є
+          власна шкала: та сама, за якою рахує наш застосунок запису. Густе волосся або перше
+          фарбування додає 10%.
+        </p>
+      </div>
+      <ol class="grid grid-cols-1 sm:grid-cols-2">
+        {
+          LENGTHS.map((l) => (
+            <li class="hair flex items-baseline gap-4 py-3">
+              <span class="code text-2xl font-bold text-copper">{l.n}</span>
+              <span class="text-sm">{l.label}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- ── 3. Послуги строками (DEV-04): замена сетки одинаковых карточек ── -->
+  <section class="px-5 py-16 sm:px-8" aria-labelledby="poslugy">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <h2 id="poslugy" class="text-3xl font-extrabold tracking-tight sm:text-5xl">Послуги</h2>
+      <a href={u('/tsiny/')} class="inline-link text-sm text-copper underline underline-offset-4"
+        >Весь прайс, {nPos(price.reduce((s, c) => s + c.items.length, 0))} →</a
+      >
+    </div>
+
+    <ul class="mt-8">
+      {
+        rows.map((r, i) => (
+          <li class="service-card hair">
+            <a
+              href={u(`/poslugy/${r.slug}/`)}
+              class="group grid grid-cols-[auto_1fr] items-baseline gap-x-4 gap-y-1 py-5 sm:grid-cols-[auto_1fr_auto_auto] sm:gap-x-8"
+            >
+              <span class="code text-xs text-ink-muted">{String(i + 1).padStart(2, '0')}</span>
+              <span class="text-lg font-semibold group-hover:text-copper sm:text-xl">{r.title}</span>
+              <span class="code col-start-2 text-sm text-ink-muted sm:col-start-3 sm:text-right">
+                {fmtDur(r.minDur)}
+              </span>
+              <span class="code col-start-2 text-sm font-bold whitespace-nowrap sm:col-start-4 sm:text-right">
+                {r.min === r.max ? `${fmtPrice(r.min)} ₴` : `${fmtPrice(r.min)}–${fmtPrice(r.max)} ₴`}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="measure mt-4 text-xs text-ink-muted">
+      «Від» означає реальну найдешевшу позицію категорії, а не приблизна оцінка. Що саме входить у
+      кожну ціну й скільки триває — на сторінці послуги.
+    </p>
+  </section>
+
+  <!-- ── 4. Инверсная секция (DEV-14): главный аргумент салона ── -->
+  <section class="bg-graphite px-5 py-20 text-paper sm:px-8">
+    <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr]">
+      <div>
+        <p class="code text-xs tracking-widest text-blonde">ФІКСОВАНА ЦІНА</p>
+        <h2 class="mt-4 text-3xl leading-tight font-extrabold tracking-tight sm:text-5xl">
+          Фарба вже включена<br />у вартість
+        </h2>
+        <p class="mt-6 max-w-lg text-base leading-relaxed text-paper/80">
+          Що входить у вартість, написано в кожному рядку прайса: миття голови, тонування, сушка
+          на браш, зняття попереднього покриття. Ціна фіксована, ви бачите суму до запису,
+          а не на касі.
+        </p>
+      </div>
+      <ul class="space-y-4 text-sm">
+        <li class="border-t border-white/15 pt-4">
+          <span class="code text-blonde">+10%</span> за густе волосся або перше фарбування. Єдина
+          надбавка на фарбуванні, названа заздалегідь.
+        </li>
+        <li class="border-t border-white/15 pt-4">
+          <span class="code text-blonde">+110 ₴</span> за укріплення нігтьової пластини, якщо воно
+          потрібне. Окремим рядком у прайсі, не сюрпризом.
+        </li>
+        <li class="border-t border-white/15 pt-4">
+          <span class="code text-blonde">24 год</span> є на те, щоб перенести або скасувати запис
+          без наслідків.
+        </li>
+        <li class="border-t border-white/15 pt-4">
+          <span class="code text-blonde">ТОП-майстер</span> у прайсі позначений окремо, з окремою
+          ціною. Надбавка є тільки там, де роботу виконує інша людина.
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 5. Роботи: мозаика columns (DEV-07), пропорции снимков сохранены ── -->
+  <section class="px-5 py-16 sm:px-8" aria-labelledby="roboty">
+    <h2 id="roboty" class="text-3xl font-extrabold tracking-tight sm:text-5xl">Наші роботи</h2>
+    <p class="mt-3 max-w-lg text-sm text-ink-muted">
+      Знято в залі на Сихівській. Без ретуші й без чужих фото з інтернету.
+    </p>
+    <div class="mt-8 columns-2 gap-3 md:columns-3 lg:columns-4">
+      {
+        GALLERY.map((slug) => (
+          <figure class="mb-3 break-inside-avoid">
+            <img
+              src={u(`/img/${slug}-480.webp`)}
+              srcset={`${u(`/img/${slug}-480.webp`)} 480w, ${u(`/img/${slug}-960.webp`)} 960w`}
+              sizes="(min-width:1024px) 25vw, (min-width:768px) 33vw, 50vw"
+              alt={images[slug].alt}
+              width={images[slug].w}
+              height={images[slug].h}
+              loading="lazy"
+              class="w-full"
+            />
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ── 6. Відгуки: только с первоисточниками (PLB-071) ── -->
+  <section class="border-t border-line px-5 py-16 sm:px-8" aria-labelledby="vidguky">
+    <div class="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+      <div>
+        <h2 id="vidguky" class="text-3xl font-extrabold tracking-tight sm:text-4xl">Відгуки</h2>
+        <p class="code mt-6 text-5xl font-bold text-copper">{SITE.rating.value}</p>
+        <p class="mt-2 text-sm text-ink-muted">
+          на основі {nRevHome} відгуків у Google
+        </p>
+        <div class="mt-6 flex flex-col gap-2 text-sm">
+          <a href={SITE.googleReviews} rel="noopener" class="inline-link text-copper underline underline-offset-4"
+            >Усі відгуки в Google Картах →</a
+          >
+          <a href={SITE.barb} rel="noopener" class="inline-link text-copper underline underline-offset-4"
+            >Відгуки на barb.ua →</a
+          >
+        </div>
+      </div>
+      <ul class="space-y-6">
+        {
+          REVIEWS.map((r) => (
+            <li class="hair pb-6">
+              <p class="measure text-sm leading-relaxed">{r.text}</p>
+              <p class="code mt-3 text-xs text-ink-muted">
+                <a href={r.href} rel="noopener" class="inline-link underline underline-offset-4">
+                  {r.name}
+                </a>
+                <span class="mx-2">·</span>
+                {r.date}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <!-- ── 7. Локація ── -->
+  <section class="grid gap-px bg-line lg:grid-cols-[1fr_1fr]" aria-labelledby="lokatsiya">
+    <div class="bg-paper px-5 py-14 sm:px-8">
+      <h2 id="lokatsiya" class="text-3xl font-extrabold tracking-tight sm:text-4xl">Сихівська, 7</h2>
+      <p class="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
+        Сихівський район Львова. Якщо ви у нас вперше, після запису надішлемо відео, як дійти від ТЦ «Сихів».
+      </p>
+      <dl class="code mt-8 space-y-4 text-sm">
+        <div><dt class="text-xs text-ink-muted">ГРАФІК</dt><dd class="mt-1">{SITE.hours}</dd></div>
+        <div>
+          <dt class="text-xs text-ink-muted">ТЕЛЕФОН</dt>
+          <dd class="mt-1"><a href={`tel:${SITE.phone}`} class="underline underline-offset-4">{SITE.phoneHuman}</a></dd>
+        </div>
+      </dl>
+      <a href={SITE.directions} rel="noopener" class="mt-8 inline-flex items-center bg-ink px-6 py-3 text-sm font-semibold text-paper"
+        >Прокласти маршрут</a
+      >
+    </div>
+    <iframe
+      title="Салон краси Beauty Svit на карті, вул. Сихівська 7, Львів"
+      loading="lazy"
+      class="min-h-[320px] w-full border-0 bg-paper"
+      src="https://www.google.com/maps?q=%D0%B2%D1%83%D0%BB.%20%D0%A1%D0%B8%D1%85%D1%96%D0%B2%D1%81%D1%8C%D0%BA%D0%B0%207%2C%20%D0%9B%D1%8C%D0%B2%D1%96%D0%B2&output=embed"
+    ></iframe>
+  </section>
+
+  <!-- ── 8. FAQ: свои вопросы салона, тексты сохранены по смыслу ── -->
+  <section class="px-5 py-16 sm:px-8" aria-labelledby="faq">
+    <h2 id="faq" class="text-3xl font-extrabold tracking-tight sm:text-4xl">Поширені питання</h2>
+    <div class="mt-8 max-w-3xl">
+      {
+        FAQ.map((f) => (
+          <details class="hair group py-4">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 text-base font-semibold">
+              {f.q}
+              <span class="code shrink-0 text-copper transition-transform duration-150 group-open:rotate-45">+</span>
+            </summary>
+            <p class="measure mt-3 text-sm leading-relaxed text-ink-muted">{f.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- ── 9. Фінальний CTA (MOB-012: CTA в нижней трети страницы) ── -->
+  <section class="bg-copper px-5 py-20 text-center text-white sm:px-8">
+    <h2 class="text-3xl leading-tight font-extrabold tracking-tight sm:text-5xl">
+      Подивіться вільний час
+    </h2>
+    <p class="measure mx-auto mt-4 text-base text-white">
+      Запис працює цілодобово, навіть коли адміністратор уже не відповідає.
+    </p>
+    <a href="#booking" class="mt-8 inline-flex items-center bg-paper px-8 py-4 text-base font-semibold text-ink"
+      >Записатися онлайн</a
+    >
+  </section>
+
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQ.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    })}
+  />
+</Base>

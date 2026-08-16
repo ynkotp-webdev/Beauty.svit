@@ -1,0 +1,118 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, u, nRev } from '../lib/site';
+---
+
+<Base
+  path="/salon-krasy-sykhiv/"
+  title="Салон краси на Сихові, Львів — як дістатися до Beauty Svit"
+  description="Beauty Svit — салон краси в Сихівському районі Львова, вул. Сихівська 7. Як дійти від ТЦ «Сихів», графік роботи, телефон і онлайн-запис 24/7."
+>
+  <section class="border-b border-line px-5 pt-14 pb-12 sm:px-8">
+    <h1 class="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
+      Салон краси<br />на Сихові
+    </h1>
+    <p class="measure mt-6 text-lg leading-relaxed">
+      Ми в Сихівському районі Львова, на вул. Сихівській, 7. Це той бік, куди зручно зайти
+      після роботи, не їдучи в центр.
+    </p>
+  </section>
+
+  <section class="grid gap-px bg-line lg:grid-cols-[0.9fr_1.1fr]">
+    <div class="bg-paper px-5 py-12 sm:px-8">
+      <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Як дійти</h2>
+      <ol class="mt-6 space-y-4 text-sm">
+        <li class="hair flex gap-4 pb-4">
+          <span class="code shrink-0 font-bold text-copper">1</span>
+          <span class="measure">
+            Орієнтир — ТЦ «Сихів». Від нього до салону кілька хвилин пішки.
+          </span>
+        </li>
+        <li class="hair flex gap-4 pb-4">
+          <span class="code shrink-0 font-bold text-copper">2</span>
+          <span class="measure">
+            Якщо ви їдете до нас уперше, після запису адміністратор надішле у Viber коротке відео
+            дороги від торгового центру. Це не бот: відео зняте нами.
+          </span>
+        </li>
+        <li class="flex gap-4">
+          <span class="code shrink-0 font-bold text-copper">3</span>
+          <span class="measure">
+            Не знайшли вхід — телефонуйте, підкажемо голосом.
+          </span>
+        </li>
+      </ol>
+
+      <dl class="code mt-10 space-y-5 text-sm">
+        <div>
+          <dt class="text-xs text-ink-muted">АДРЕСА</dt>
+          <dd class="mt-1">
+            <a href={SITE.maps} rel="noopener" class="underline underline-offset-4">{SITE.addressFull}</a>
+          </dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">ГРАФІК</dt>
+          <dd class="mt-1">{SITE.hours}</dd>
+          <dd class="mt-1 text-xs text-ink-muted">{SITE.hoursNote}</dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">ТЕЛЕФОН</dt>
+          <dd class="mt-1"><a href={`tel:${SITE.phone}`} class="underline underline-offset-4">{SITE.phoneHuman}</a></dd>
+        </div>
+        <div>
+          <dt class="text-xs text-ink-muted">ПОШТА</dt>
+          <dd class="mt-1">
+            <a href={`mailto:${SITE.email}`} class="break-all underline underline-offset-4">{SITE.email}</a>
+          </dd>
+        </div>
+      </dl>
+
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href={SITE.directions} rel="noopener" class="inline-flex items-center bg-ink px-6 py-3 text-sm font-semibold text-white"
+          >Прокласти маршрут</a
+        >
+        <a
+          href="#booking"
+          class="inline-flex items-center bg-copper px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red"
+          >Обрати час</a
+        >
+      </div>
+    </div>
+
+    <iframe
+      title="Салон краси Beauty Svit на карті, вул. Сихівська 7, Львів"
+      loading="lazy"
+      class="min-h-[420px] w-full border-0 bg-paper"
+      src="https://www.google.com/maps?q=%D0%B2%D1%83%D0%BB.%20%D0%A1%D0%B8%D1%85%D1%96%D0%B2%D1%81%D1%8C%D0%BA%D0%B0%207%2C%20%D0%9B%D1%8C%D0%B2%D1%96%D0%B2&output=embed"
+    ></iframe>
+  </section>
+
+  <!-- ── Каналы связи: всё подтверждено, ничего не выдумано (TRAF-005) ── -->
+  <section class="bg-graphite px-5 py-14 text-paper sm:px-8">
+    <h2 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Де ще нас знайти</h2>
+    <ul class="mt-8 grid gap-x-10 sm:grid-cols-2 lg:grid-cols-4">
+      <li class="border-t border-white/20 py-4">
+        <a href={SITE.instagram} rel="noopener" class="code text-sm text-blonde underline underline-offset-4"
+          >Instagram</a
+        >
+        <p class="mt-2 text-xs text-paper/70">@beautysvit.salon — свіжі роботи майстрів</p>
+      </li>
+      <li class="border-t border-white/20 py-4">
+        <a href={SITE.telegramBot} rel="noopener" class="code text-sm text-blonde underline underline-offset-4"
+          >Telegram</a
+        >
+        <p class="mt-2 text-xs text-paper/70">Бот салону надсилає підтвердження запису</p>
+      </li>
+      <li class="border-t border-white/20 py-4">
+        <a href={SITE.googleReviews} rel="noopener" class="code text-sm text-blonde underline underline-offset-4"
+          >Google Карти</a
+        >
+        <p class="mt-2 text-xs text-paper/70">{SITE.rating.value} на основі {nRev(SITE.rating.count)}</p>
+      </li>
+      <li class="border-t border-white/20 py-4">
+        <a href={SITE.barb} rel="noopener" class="code text-sm text-blonde underline underline-offset-4">barb.ua</a>
+        <p class="mt-2 text-xs text-paper/70">Друга майданчик із відгуками про салон</p>
+      </li>
+    </ul>
+  </section>
+</Base>

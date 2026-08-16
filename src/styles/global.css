@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+/* ── Шрифты. Инстансированы и субсечены под кириллицу+латиницу: 19.8 + 12.5 = 32.2 КБ.
+      Пары из списков «дефолтных» (AIS-12) и «вы перестали искать» не берём. ── */
+@font-face {
+  font-family: "Geologica";
+  src: url("/fonts/geologica.woff2") format("woff2-variations");
+  font-weight: 300 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Martian";
+  src: url("/fonts/martianmono.woff2") format("woff2-variations");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
+@theme {
+  /* Палитра снята пикселями с работ салона. Контраст пересчитан, см. DESIGN.md */
+  --color-paper: #ededeb;
+  --color-ink: #171716;
+  --color-ink-muted: #55554f;
+  --color-graphite: #242422;
+  --color-line: #c9c9c4;
+
+  /* зразки — реальные тона волос с фотографий клиента */
+  --color-copper: #7a3312;
+  --color-red: #9a4030;
+  --color-chestnut: #7a4a4a;
+  --color-honey: #a08060;
+  --color-blonde: #e8bc96;
+
+  --font-sans: "Geologica", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Martian", ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* якоря прайса не должны уезжать под шапку */
+  scroll-padding-top: 5.5rem;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  /* место под мобильную панель записи, иначе она накрывает конец страницы */
+  padding-bottom: calc(3.25rem + env(safe-area-inset-bottom));
+}
+
+/* Моноширинная подпись: номера зразків, довжина, хвилини, ціна (DEV-11).
+   Отдельным блоком над каждым H2 не ставится — это AIS-09. */
+.code {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* Мера строки. 56ch у Geologica ≈ 78 символов по счёту impeccable detect
+   (он меряет width/(fontSize*0.5), а ch этой гарнитуры шире). */
+.measure {
+  max-inline-size: 56ch;
+}
+
+/* Волосяная линейка между строками услуг — вместо рамок и зебры (DEV-04, DEV-05) */
+.hair {
+  border-block-end: 1px solid var(--color-line);
+}
+
+/* Тач-цели: на текущем сайте 55 из 94 меньше 44px (MOB-002) */
+a,
+button,
+summary {
+  min-block-size: 44px;
+}
+a.inline-link,
+p a {
+  min-block-size: 0;
+}
+
+/* Tailwind preflight обнуляет margin у <dialog> — центрирование чинится m-auto */
+dialog {
+  margin: auto;
+}
+dialog::backdrop {
+  background: color-mix(in srgb, var(--color-graphite) 82%, transparent);
+}
+
+@media (min-width: 640px) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,181 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE, LENGTHS, u, fmtPrice, fmtDur, nPos } from '../lib/site';
+import { splitTiers } from '../lib/tiers';
+import price from '../data/price.json';
+
+const slug = (s: string) =>
+  s.toLowerCase().replace(/[^a-zа-яіїєґ0-9]+/gi, '-').replace(/^-|-$/g, '');
+
+const cats = price.map((c) => ({ ...c, anchor: slug(c.name), ...splitTiers(c.items) }));
+const total = price.reduce((s, c) => s + c.items.length, 0);
+---
+
+<Base
+  path="/tsiny/"
+  title="Ціни на послуги салону краси Beauty Svit, Львів, Сихів"
+  description={`Повний прайс салону Beauty Svit на Сихові: ${nPos(total)} з ціною та тривалістю. Фарбування, стрижка, біозавивка, манікюр, педикюр, брови, шугарінг. Фарба включена у вартість.`}
+>
+  <!-- ── Шапка прайса ── -->
+  <section class="border-b border-line px-5 pt-14 pb-10 sm:px-8">
+    <div class="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+      <div>
+        <h1 class="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
+          Ціни<span class="code ml-4 align-super text-base font-normal text-copper">{total}</span>
+        </h1>
+        <p class="measure mt-5 text-base leading-relaxed text-ink-muted">
+          Весь прайс салону, як він є в застосунку запису: ціна, тривалість і те, що входить
+          у вартість. Фарба включена у всі фарбування.
+        </p>
+      </div>
+
+      <!-- шкала довжин повторяется здесь: без неё половина цен не читается -->
+      <div class="bg-graphite p-6 text-paper">
+        <p class="code text-xs tracking-widest text-blonde">ШКАЛА ДОВЖИН</p>
+        <ol class="mt-4 space-y-2 text-sm">
+          {
+            LENGTHS.map((l) => (
+              <li class="flex gap-3">
+                <span class="code w-4 shrink-0 text-blonde">{l.n}</span>
+                <span class="text-paper/85">{l.label}</span>
+              </li>
+            ))
+          }
+        </ol>
+        <p class="mt-4 border-t border-white/15 pt-3 text-xs text-paper/60">
+          Густе волосся або перше фарбування додає 10% до базової ціни.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Якоря: текстовые ссылки с подчёркиванием, не pill-чипы (DEV-05, AIS-07) ── -->
+  <nav aria-label="Розділи прайса" class="border-b border-line px-5 py-5 sm:px-8">
+    <ul class="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      {
+        cats.map((c) => (
+          <li>
+            <a href={`#${c.anchor}`} class="inline-link underline underline-offset-4 hover:text-copper">
+              {c.name}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  {
+    cats.map((c) => (
+      <section id={c.anchor} class="border-b border-line px-5 py-12 sm:px-8">
+        <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <h2 class="text-2xl font-extrabold tracking-tight sm:text-4xl">{c.name}</h2>
+          <span class="code text-xs text-ink-muted">{nPos(c.items.length)}</span>
+        </div>
+
+        {/* Пояснения салона из его же CRM — переносятся, а не переписываются */}
+        {c.notes.length > 0 && (
+          <ul class="mt-5 space-y-2">
+            {c.notes.map((n) => (
+              <li class="measure border-l-2 border-copper pl-4 text-sm text-ink-muted">
+                <strong class="font-semibold text-ink">{n.title}.</strong> {n.text}
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {/* Разворот-сравнение: базовый уровень против ТОП-майстра */}
+        {c.tiered.length > 0 && (
+          <div class="mt-8">
+            <div class="code hidden grid-cols-[1fr_auto_auto] gap-x-8 border-b border-ink pb-2 text-[11px] tracking-widest text-ink-muted sm:grid">
+              <span>ПОСЛУГА</span>
+              <span class="text-right">БАЗОВА</span>
+              <span class="min-w-[7.5rem] text-right text-copper">ТОП-МАЙСТЕР</span>
+            </div>
+            <ul>
+              {c.tiered.map((t) => (
+                <li class="service-card hair grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4 sm:grid-cols-[1fr_auto_auto] sm:gap-x-8">
+                  <div class="col-span-2 sm:col-span-1">
+                    <p class="text-base font-semibold">{t.title}</p>
+                    <p class="code mt-1 text-xs text-ink-muted">
+                      {fmtDur(t.base.duration)}
+                      {t.base.masters.length > 0 && <span> · {t.base.masters.join(', ')}</span>}
+                    </p>
+                    {t.base.desc && <p class="measure mt-1 text-xs text-ink-muted">{t.base.desc}</p>}
+                    {t.top.desc && t.top.desc !== t.base.desc && (
+                      <p class="measure mt-1 text-xs text-copper">{t.top.desc}</p>
+                    )}
+                  </div>
+                  <p class="code text-sm font-bold whitespace-nowrap sm:min-w-[5rem] sm:text-right">
+                    {fmtPrice(t.base.price)} ₴
+                  </p>
+                  <p class="code min-w-[7.5rem] text-right text-sm font-bold text-copper">
+                    {fmtPrice(t.top.price)} ₴
+                    <span class="block text-[10px] leading-tight font-normal whitespace-normal text-ink-muted">
+                      ТОП-майстер{t.top.masters.length > 0 && <span> {t.top.masters.join(', ')}</span>}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <p class="measure mt-4 text-xs text-ink-muted">
+              Друга ціна означає ту саму послугу в руках ТОП-майстра. Різниця в ціні є тільки там,
+              де роботу фізично виконує інша людина.
+            </p>
+          </div>
+        )}
+
+        {/* Категории без градации: страница молчит о ней, а не заявляет */}
+        {c.flat.length > 0 && (
+          <ul class="mt-8">
+            {c.flat.map((it) => (
+              <li class="service-card hair grid grid-cols-[1fr_auto] gap-x-6 gap-y-1 py-4 sm:gap-x-8">
+                <div>
+                  <p class="text-base font-semibold">{it.name}</p>
+                  <p class="code mt-1 text-xs text-ink-muted">
+                    {fmtDur(it.duration)}
+                    {it.masters.length > 0 && <span> · {it.masters.join(', ')}</span>}
+                  </p>
+                  {it.desc && <p class="measure mt-1 text-xs text-ink-muted">{it.desc}</p>}
+                </div>
+                <p class="code text-sm font-bold whitespace-nowrap sm:text-right">{fmtPrice(it.price)} ₴</p>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <a
+          href="#booking"
+          class="mt-8 inline-flex items-center bg-copper px-6 py-3 text-sm font-semibold text-white transition-colors duration-150 hover:bg-red"
+        >
+          Обрати час
+        </a>
+      </section>
+    ))
+  }
+
+  <section class="px-5 py-16 sm:px-8">
+    <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Що ще варто знати</h2>
+    <ul class="measure mt-6 space-y-3 text-sm text-ink-muted">
+      <li class="hair pb-3">
+        Актуальні ціни та вільні години завжди в застосунку запису. Прайс на цій сторінці береться
+        звідти ж.
+      </li>
+      <li class="hair pb-3">
+        Запис можна перенести або скасувати без наслідків, якщо зробити це не пізніше ніж за 24
+        години до візиту.
+      </li>
+      <li class="hair pb-3">
+        Догляд для дому можна придбати на ресепшені. Майстер порадить засіб під ваш тип волосся.
+      </li>
+      <li>
+        Якщо ви у нас вперше, ми додатково підтвердимо запис у Viber та надішлемо відео, як дійти
+        від ТЦ «Сихів».
+      </li>
+    </ul>
+    <a
+      href={`tel:${SITE.phone}`}
+      class="code mt-8 inline-flex items-center text-sm text-copper underline underline-offset-4"
+      >{SITE.phoneHuman}</a
+    >
+  </section>
+</Base>
